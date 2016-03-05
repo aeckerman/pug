@@ -16,6 +16,12 @@ def importantMessageN(obj, before, after):
 def normalMessageN(obj, before, after):
 	print(Fore.YELLOW + before + str(obj.text) + after + Fore.RESET)
 
+def importantMessageP(obj, before, after):
+	print(Style.BRIGHT + Fore.BLUE + before + str(obj.text) + after + Style.RESET_ALL + Fore.RESET)
+
+def normalMessageP(obj, before, after):
+	print(Fore.BLUE + before + str(obj.text) + after + Fore.RESET)
+
 #Command group init
 @click.group()
 def pug():
@@ -69,10 +75,33 @@ def npm(package_name):
 	normalMessageN(package_downloads, "Downloads(last month):\n" , "")
 	print(Fore.YELLOW + "License:\n" + package_license + Fore.RESET)
 
+#PyPi search command.
+@click.command()
+@click.argument("package_name")
+@click.argument("version")
+def pypi(package_name, version):
+	url = "https://pypi.python.org/pypi/%s/%s" % (package_name, version)
+	r = requests.get(url)
+	soup = BeautifulSoup(r.content, "html.parser")
+
+	package_title = soup.find("a", {"href": "/pypi/%s" % (package_name)})
+	package_description = soup.find("p", {"style": "font-style: italic"})
+	#package_author = soup.find()
+	package_version = soup.find("a", {"href": "/pypi/%s/%s" % (package_name, version)})
+	#package_downloads = soup.find()
+	#package_license = soup.find()
+
+	importantMessageG(package_title, "", "")
+	importantMessageG(package_description, "", "")
+	#normalMessageG(package_author, "Author(s):", "")
+	normalMessageG(package_version, "Version:\n", "")
+	#normalMessageG(package_downloads, "Downloads:\n", "")
+	#normalMessageG(package_license, "License:", "")
 
 #Adding commands to "pug" group
 pug.add_command(gem)
 pug.add_command(npm)
+pug.add_command(pypi)
 
 #Starting app
 if __name__ == "__main__":
